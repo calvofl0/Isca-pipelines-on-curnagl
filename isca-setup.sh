@@ -8,7 +8,9 @@ module load netcdf-c/4.9.3
 module load netcdf-fortran/4.6.2
 module load python/3.14.0
 
-# Fetch Isca and merge the Gravity Wave Drag schemes of PR 303 (https://github.com/ExeClim/Isca/pull/303)
+# Fetch Isca and merge with the
+#   * Gravity Wave Drag schemes of PR 303 (https://github.com/ExeClim/Isca/pull/303)
+#   * SST and ice physics improvements of PR 306 (https://github.com/ExeClim/Isca/pull/306)
 git clone https://github.com/ExeClim/Isca 2> /dev/null &&
 (
   cd Isca
@@ -16,10 +18,11 @@ git clone https://github.com/ExeClim/Isca 2> /dev/null &&
   git config user.name "Regan Mudhar"
   git config user.email "Regan.Mudhar@unil.ch"
   # Fetch and rebase PR 303
-  git remote add -t gwd_merge_orographic_nonorographic sit23 https://github.com/sit23/Isca
+  git remote add -t gwd_merge_orographic_nonorographic -t uob_fftw_sit23_physics_2026 sit23 https://github.com/sit23/Isca
   git fetch sit23
-  git checkout -B gwd-schemes 773a532e8e703913d1d18baaca05fd7255c2b990     # Last commit in sit23/gwd_merge_orographic_nonorographic as of 2026/09/01 
-  git rebase d1321ac372698bcbe054da1cc5b4eef9f998a096                      # Last commit in origin/master as of 2026/09/01
+  git checkout -B PR-303+306-merge d1321ac372698bcbe054da1cc5b4eef9f998a096   # Last commit in origin/master as of 2026/10/07
+  git rebase 773a532e8e703913d1d18baaca05fd7255c2b990                         # Last commit in sit23/gwd_merge_orographic_nonorographic as of 2026/10/07
+  git rebase 6c4c17d50af8b4278a8eb49bc56388378a08d61c                         # Last commit in sit23/uob_fftw_sit23_physics_2026 as of 2026/10/07
   # Apply patches and copy/update a couple of files
   git apply ../isca.patch
   cp ../curnagl-gfortran src/extra/env/curnagl-gfortran
