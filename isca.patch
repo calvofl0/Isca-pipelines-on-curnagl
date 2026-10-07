@@ -1,0 +1,58 @@
+diff --git a/exp/test_cases/socrates_test/socrates_aquaplanet.py b/exp/test_cases/socrates_test/socrates_aquaplanet.py
+index 053c5d2..e674a00 100644
+--- a/exp/test_cases/socrates_test/socrates_aquaplanet.py
++++ b/exp/test_cases/socrates_test/socrates_aquaplanet.py
+@@ -201,4 +201,4 @@ if __name__=="__main__":
+         exp.run(1, use_restart=False, num_cores=NCORES, overwrite_data=False)
+         
+         for i in range(2,121):
+-            exp.run(i, num_cores=NCORES, overwrite_data=overwrite)
++            exp.run(i, num_cores=NCORES, overwrite_data=False)
+diff --git a/src/extra/python/isca/templates/compile.sh b/src/extra/python/isca/templates/compile.sh
+index db35c13..e25c8ce 100755
+--- a/src/extra/python/isca/templates/compile.sh
++++ b/src/extra/python/isca/templates/compile.sh
+@@ -18,7 +18,7 @@ template_debug={{ template_dir }}/mkmf.template.debug
+ execdir={{ execdir }}        # where code is compiled and executable is created
+ executable={{ executable_name }}
+ 
+-#netcdf_flags=`nf-config --fflags --flibs`
++netcdf_flags=`nf-config --fflags --flibs`
+ 
+ #ulimit -s unlimited # Set stack size to unlimited
+ export MALLOC_CHECK_=0
+diff --git a/src/extra/python/isca/templates/mkmf.template.gfort b/src/extra/python/isca/templates/mkmf.template.gfort
+index 63500db..db4949c 100755
+--- a/src/extra/python/isca/templates/mkmf.template.gfort
++++ b/src/extra/python/isca/templates/mkmf.template.gfort
+@@ -2,6 +2,7 @@
+ # typical use with mkmf
+ # mkmf -t template.ifc -c"-Duse_libMPI -Duse_netCDF" path_names /usr/local/include
+ CPPFLAGS = -I/usr/local/include
++NETCDF_LIBS = `nf-config --fflags  --flibs`
+ 
+ # FFLAGS:
+ #  -cpp: Use the fortran preprocessor
+@@ -17,7 +18,8 @@ CPPFLAGS = -I/usr/local/include
+ 
+ FFLAGS = $(CPPFLAGS) $(NETCDF_LIBS) -cpp -fcray-pointer \
+           -O2 -ffree-line-length-none -fno-range-check \
+-           -fdefault-real-8 -fdefault-double-8
++           -fdefault-real-8 -fdefault-double-8 \
++           -fallow-invalid-boz -fallow-argument-mismatch
+ 
+ FC = $(F90)
+ LD = $(F90) $(NETCDF_LIBS)
+diff --git a/src/extra/python/isca/templates/run.sh b/src/extra/python/isca/templates/run.sh
+index e4a8d60..c62a395 100644
+--- a/src/extra/python/isca/templates/run.sh
++++ b/src/extra/python/isca/templates/run.sh
+@@ -19,7 +19,7 @@ if [ $debug == True ]; then
+    echo "Opening idb for debugging"
+    exec idb -gdb  {{ executable}}
+ else
+-  exec nice -{{nice_score}} mpirun {{mpirun_opts}} -np {{ num_cores }} {{ execdir }}/{{ executable }}
++  exec nice -{{nice_score}} srun {{mpirun_opts}} {{ execdir }}/{{ executable }}
+ fi
+ 
+ err_code=$?
