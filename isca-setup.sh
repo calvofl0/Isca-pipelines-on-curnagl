@@ -7,6 +7,7 @@ dcsrsoft use 20260114
 module load netcdf-c/4.9.3
 module load netcdf-fortran/4.6.2
 module load python/3.14.0
+module load openmpi/5.0.8
 
 # Fetch Isca and merge with the
 #   * Gravity Wave Drag schemes of PR 303 (https://github.com/ExeClim/Isca/pull/303)
@@ -32,6 +33,15 @@ git clone https://github.com/ExeClim/Isca 2> /dev/null &&
   git config remove-section user
 ) || echo "Warning: cannot clone into destination path 'Isca' (does it already exist?), skipping"
 
+# Compile plevel_interpolation post-processing routines
+# (Then run with ./scripts/plevel.sh -a -i OUTPUT_MODEL_FILE FIELD_1 [[FIELD_2, ...] FIELD_N] from Isca/postprocessing/plevel_interpolation dir)
+cp -a plevel_interpolation-mkmf.template.gfort Isca/postprocessing/plevel_interpolation/bin/mkmf.template.gfort
+(
+  cd Isca/postprocessing/plevel_interpolation/exec
+  ../bin/mkmf -p plev.x -t ../bin/mkmf.template.gfort -c "-Duse_netCDF" -a ../src ../src/path_names ../src/shared/mpp/include ../src/shared/include
+  make
+)
+
 # Fetch and compile SOCRATES
 git clone https://github.com/MetOffice/socrates 2> /dev/null &&
 (
@@ -52,3 +62,9 @@ test ! -d isca_venv &&
   isca_venv/bin/pip install -e ./Isca/src/extra/python
   isca_venv/bin/pip install tqdm # Missing dependency in Isca requirements
 ) || echo "Warning: Isca python virtual environment seems to exist, skipping"
+
+  ## Regan attempt:
+  ## Fetch and rebase PR 306
+  #git remote add -t uob_fftw_sit23_physics_2026 sit23 https://github.com/sit23/Isca
+  #git fetch sit23
+  #git checkout -B complex-isca 6c4c17d50af8b4278a8eb49bc56388378a08d61c     # Last commit in sit23/uob_fftw_sit23_physics_2026 as of 2026/10/06
