@@ -12,9 +12,10 @@ module load openmpi/5.0.8
 # Fetch Isca and merge with the
 #   * Gravity Wave Drag schemes of PR 303 (https://github.com/ExeClim/Isca/pull/303)
 #   * SST and ice physics improvements of PR 306 (https://github.com/ExeClim/Isca/pull/306)
-git clone https://github.com/ExeClim/Isca 2> /dev/null &&
+git clone https://github.com/rgnmudhar/Isca_rmudhar Isca 2> /dev/null &&
 (
   cd Isca
+  git checkout complex_isca_rm
   # Basic repo git config to be able to work with it
   git config user.name "Regan Mudhar"
   git config user.email "Regan.Mudhar@unil.ch"
@@ -62,9 +63,3 @@ test ! -d isca_venv &&
   isca_venv/bin/pip install -e ./Isca/src/extra/python
   isca_venv/bin/pip install tqdm # Missing dependency in Isca requirements
 ) || echo "Warning: Isca python virtual environment seems to exist, skipping"
-
-  ## Regan attempt:
-  ## Fetch and rebase PR 306
-  #git remote add -t uob_fftw_sit23_physics_2026 sit23 https://github.com/sit23/Isca
-  #git fetch sit23
-  #git checkout -B complex-isca 6c4c17d50af8b4278a8eb49bc56388378a08d61c     # Last commit in sit23/uob_fftw_sit23_physics_2026 as of 2026/10/06
